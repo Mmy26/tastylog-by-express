@@ -20,4 +20,4 @@ FROM
 ) as shop_category
 LEFT JOIN m_category ON shop_category.category_id = m_category.id
 GROUP BY shop_category.id
-LIMIT ?
+LIMIT ?, ?
