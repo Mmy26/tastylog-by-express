@@ -11,6 +11,13 @@ const app =  express();
 app.set("view engine", "ejs");
 app.disable("x-powered-by");
 
+// グローバルメソッドをview engineで読み込み
+app.use((req, res, next) => {
+  res.locals.moment = require("moment");
+  res.locals.padding = require("./lib/math/math.js").padding;
+  next();
+});
+
 // 静的情報
 app.use(favicon(path.join(__dirname, "/public/favicon.ico")));
 app.use("/public", express.static(path.join(__dirname, "/public")));
