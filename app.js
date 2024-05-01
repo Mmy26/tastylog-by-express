@@ -17,7 +17,22 @@ app.use("/public", express.static(path.join(__dirname, "/public")));
 // accessロガー
 app.use(accessLogger());
 // ルーティング
+app.use("/shops", require("./routes/shops.js"));
 app.use("/", require("./routes/index.js"));
+
+
+app.use("/test", async(req, res, next) => {
+  const { MySQLClient, sql } = require("./lib/database/client.js");
+  var data;
+  try {
+    data = await MySQLClient.executeQuery(await sql(await "SELECT_SHOP_BASIC_BY_ID"), [1]);
+    console.log(data);
+  } catch (err) {
+    next(err);
+  }
+
+  res.end("OK");
+});
 // アプリケーションのロガー
 app.use(applicationLogger());
 // アプリケーションの実行
