@@ -30,16 +30,21 @@ app.use("/", require("./routes/index.js"));
 
 
 app.use("/test", async(req, res, next) => {
-  const { MySQLClient, sql } = require("./lib/database/client.js");
-  var data;
+  const { MySQLClient } = require("./lib/database/client.js");
+  var tran;
   try {
-    data = await MySQLClient.executeQuery(await sql(await "SELECT_SHOP_BASIC_BY_ID"), [1]);
-    console.log(data);
+    tran = await MySQLClient.beginTransaction();
+    await tran.executeQuery(
+      "UPDATE t_shop SET score=? WHERE id=?",
+      [3.92, 1]
+    );
+    // throw new Error("Test exception");
+    await tran.commit();
+    res.end("OK");
   } catch (err) {
-    next(err);
+    await tran.rollback();
+    next();
   }
-
-  res.end("OK");
 });
 // アプリケーションのロガー
 app.use(applicationLogger());
