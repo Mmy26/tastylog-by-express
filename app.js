@@ -28,24 +28,6 @@ app.use("/search", require("./routes/search.js"));
 app.use("/shops", require("./routes/shops.js"));
 app.use("/", require("./routes/index.js"));
 
-
-app.use("/test", async(req, res, next) => {
-  const { MySQLClient } = require("./lib/database/client.js");
-  var tran;
-  try {
-    tran = await MySQLClient.beginTransaction();
-    await tran.executeQuery(
-      "UPDATE t_shop SET score=? WHERE id=?",
-      [3.92, 1]
-    );
-    // throw new Error("Test exception");
-    await tran.commit();
-    res.end("OK");
-  } catch (err) {
-    await tran.rollback();
-    next();
-  }
-});
 // アプリケーションのロガー
 app.use(applicationLogger());
 // アプリケーションの実行
