@@ -23,7 +23,10 @@ app.use(favicon(path.join(__dirname, "/public/favicon.ico")));
 app.use("/public", express.static(path.join(__dirname, "/public")));
 // accessロガー
 app.use(accessLogger());
+// ミドルミェアの設定
+app.use(express.urlencoded({ extended: true }));
 // ルーティング
+app.use("/account", require("./routes/account.js"));
 app.use("/search", require("./routes/search.js"));
 app.use("/shops", require("./routes/shops.js"));
 app.use("/", require("./routes/index.js"));
