@@ -5,6 +5,7 @@ const applicationLogger = require("./lib/log/applicationlogger.js");
 const accessLogger = require("./lib/log/accessloger.js");
 const express = require("express");
 const favicon = require("serve-favicon");
+const cookie = require("cookie-parser");
 const app =  express();
 
 // EXpressの設定
@@ -24,7 +25,13 @@ app.use("/public", express.static(path.join(__dirname, "/public")));
 // accessロガー
 app.use(accessLogger());
 // ミドルミェアの設定
+app.use(cookie());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  console.log(res.cookie.message);
+  res.cookie("message", "Hello World!");
+  next();
+});
 // ルーティング
 app.use("/account", require("./routes/account.js"));
 app.use("/search", require("./routes/search.js"));
