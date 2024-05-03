@@ -1,8 +1,8 @@
 const router = require("express").Router();
 const { MySQLClient, sql } = require("../lib/database/client.js");
 const moment = require("moment");
+const tokens = new (require("csrf"))();
 const DATE_FORMAT = "YYYY/MM/DD";
-
 
 var validateReviewData = function (req) {
   var body = req.body;
@@ -31,9 +31,15 @@ var createReviewData = function (req) {
   };
 };
 
-router.get("/regist/:shopId(\\d+)", async (req, res, next)=> {
+router.get("/regist/:shopId(\\d+)", async (req, res, next) => {
   var shopId = req.params.shopId;
-  var shop, shopName,review, results;
+  var secret, token, shop, shopName, review, results;
+
+  secret = await tokens.secret();
+  token = tokens.create(secret);
+  req.session._csrf = secret;
+  res.cookie("_csrf", token);
+
   try {
     results = await MySQLClient.executeQuery(
       await sql("SELECT_SHOP_BASIC_BY_ID"),
@@ -47,7 +53,7 @@ router.get("/regist/:shopId(\\d+)", async (req, res, next)=> {
     next(err);
   }
 });
-router.post("/regist/:shopId(\\d+)", (req, res, next) => {
+router.post("/regist/:shopId(\\d+)", async (req, res, next) => {
   var review = createReviewData(req);
   var { shopId, shopName } = req.body;
   res.render("./account/reviews/regist-form.ejs", { shopId, shopName, review });
@@ -61,9 +67,19 @@ router.post("/regist/confirm", (req, res, next) => {
     res.render("./account/reviews/regist-form.ejs", { error, shopId, shopName, review });
     return;
   }
+
   res.render("./account/reviews/regist-confirm.ejs", { shopId, shopName, review });
 });
+
 router.post("/regist/execute", async (req, res, next) => {
+  var secret = req.session._csrf;
+  var token = req.cookies._csrf;
+
+  if (tokens.verify(secret, token) === false) {
+    next(new Error("Invalid Token."));
+    return;
+  }
+
   var error = validateReviewData(req);
   var review = createReviewData(req);
   var { shopId, shopName } = req.body;
@@ -93,8 +109,10 @@ router.post("/regist/execute", async (req, res, next) => {
   } catch (err) {
     await transaction.rollback();
     next(err);
-    return;
   }
+
+  delete req.session._csrf;
+  res.clearCookie("_csrf");
 
   res.render("./account/reviews/regist-complete.ejs", { shopId });
 });
