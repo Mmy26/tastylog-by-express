@@ -53,8 +53,14 @@ router.post("/regist/:shopId(\\d+)", (req, res, next) => {
   res.render("./account/reviews/regist-form.ejs", { shopId, shopName, review });
 });
 router.post("/regist/confirm", (req, res, next) => {
+  var error = validateReviewData(req);
   var review = createReviewData(req);
   var { shopId, shopName } = req.body;
+
+  if (error) {
+    res.render("./account/reviews/regist-form.ejs", { error, shopId, shopName, review });
+    return;
+  }
   res.render("./account/reviews/regist-confirm.ejs", { shopId, shopName, review });
 });
 
