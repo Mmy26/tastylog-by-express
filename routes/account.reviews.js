@@ -1,6 +1,23 @@
 const router = require("express").Router();
 const { MySQLClient, sql } = require("../lib/database/client.js");
+const moment = require("moment");
+const DATE_FORMAT = "YYYY/MM/DD";
 
+
+var validateReviewData = function (req) {
+  var body = req.body;
+  var isValid = true, error = {};
+
+  if (body.visit && !moment(body.visit, DATE_FORMAT).isValid()) {
+    isValid = false;
+    error.visit = "訪問日の日付文字列が不正です。";
+  }
+
+  if (isValid) {
+    return undefined;
+  }
+  return error;
+};
 var createReviewData = function (req) {
   var body = req.body, date;
   var moment = require("moment");
