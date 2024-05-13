@@ -4,12 +4,15 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prebuild": "rimraf ./dist/**/*",
+    "build": "pkg ."
   },
   "author": "Mmy_26",
   "license": "MIT",
   "devDependencies": {
-    "eslint": "7.25.0"
+    "eslint": "7.25.0",
+    "pkg": "5.3.0",
+    "rimraf": "3.0.2"
   },
   "dependencies": {
     "@garafu/mysql-fileloader": "0.0.3",
@@ -29,5 +32,17 @@
     "passport-local": "1.0.0",
     "round-to": "5.0.0",
     "serve-favicon": "2.5.0"
+  },
+  "bin": "./app.js",
+  "pkg": {
+    "assets": [
+      "./views/**/*.ejs",
+      "./lib/**/*.sql",
+      "./public/**/*"
+    ],
+    "targets": [
+      "node16-win"
+    ],
+    "outputPath": "./dist"
   }
 }
