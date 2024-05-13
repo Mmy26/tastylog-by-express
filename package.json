@@ -21,6 +21,7 @@
     "express": "4.17.1",
     "express-mysql-session": "2.1.6",
     "express-session": "1.17.1",
+    "http-graceful-shutdown": "3.1.2",
     "log4js": "6.3.0",
     "moment": "2.29.1",
     "mysql": "2.18.1",

@@ -12,6 +12,7 @@ const cookie = require("cookie-parser");
 const session = require("express-session");
 const MySQlStore = require("express-mysql-session")(session);
 const flash = require("connect-flash");
+const gracefulShutdown = require("http-graceful-shutdown");
 const app = express();
 
 // EXpressの設定
@@ -84,6 +85,27 @@ app.use((err, req, res, next) => {
 });
 
 // アプリケーションの実行
-app.listen(appconfig.PORT, () => {
+var server = app.listen(appconfig.PORT, () => {
   logger.application.info(`Application listening at :${appconfig.PORT}`);
+});
+
+// グレースフルシャットダウン
+gracefulShutdown(server, {
+  signals: "SIGINT SIGTERM",
+  timeout: 10000,
+  onShutdown: () => {
+    return new Promise((resolve, reject) => {
+      const { pool } = require("./lib/database/pool.js");
+      pool.end((err) => {
+        if(err) {
+          return reject(err);
+        }
+        resolve();
+      });
+    });
+  },
+  finally: () => {
+    const logger = require("./lib/log/logger.js").application;
+    logger.info("Application shutdown finished");
+  }
 });
