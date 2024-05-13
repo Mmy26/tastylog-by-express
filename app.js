@@ -55,13 +55,33 @@ app.use(flash());
 app.use(...accesscontrol.initialize());
 
 // ルーティング
-app.use("/account", require("./routes/account.js"));
-app.use("/search", require("./routes/search.js"));
-app.use("/shops", require("./routes/shops.js"));
-app.use("/", require("./routes/index.js"));
+app.use("/", (() => {
+  // クリックジャッキング対策でX-Frame-Optionsをすべての画面に対し表示させる
+  const router = express.Router();
+  router.use((req, res, next)=> {
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    next();
+  });
+  router.use("/account", require("./routes/account.js"));
+  router.use("/search", require("./routes/search.js"));
+  router.use("/shops", require("./routes/shops.js"));
+  router.use("/test", ()=> {throw new Error("test error");});
+  router.use("/", require("./routes/index.js"));
+  return router;
+})());
 
 // アプリケーションのロガー
 app.use(applicationlogger());
+
+// カスタムエラーページ
+app.use((req, res, next) => {
+  res.status(404);
+  res.render("./404.ejs");
+});
+app.use((err, req, res, next) => {
+  res.status(500);
+  res.render("./500.ejs");
+});
 
 // アプリケーションの実行
 app.listen(appconfig.PORT, () => {
